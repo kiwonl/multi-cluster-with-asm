@@ -340,7 +340,7 @@ Create Ingressgateway as ClusteIP type instead of Load Balancer Type
    --direction=ingress \
    --target-tags=${GKE_NODE_NETWORK_TAGS_1} \
    --source-ranges=130.211.0.0/22,35.191.0.0/16 \
-   --rules=tcp:9376
+   --rules=tcp:15021
 
    gcloud compute firewall-rules create fw-allow-health-check-and-proxy-for-cluster-2 \
    --network=default \
@@ -348,7 +348,32 @@ Create Ingressgateway as ClusteIP type instead of Load Balancer Type
    --direction=ingress \
    --target-tags=${GKE_NODE_NETWORK_TAGS_2} \
    --source-ranges=130.211.0.0/22,35.191.0.0/16 \
-   --rules=tcp:9376
+   --rules=tcp:15021
    ```
 
-   
+   output
+   ```
+   $ gcloud compute network-endpoint-groups list
+   NAME: asm-ingress-http-1
+   LOCATION: us-central1-c
+   ENDPOINT_TYPE: GCE_VM_IP_PORT
+   SIZE: 3
+
+   NAME: asm-ingress-https-1
+   LOCATION: us-central1-c
+   ENDPOINT_TYPE: GCE_VM_IP_PORT
+   SIZE: 3
+
+   NAME: asm-ingress-http-2
+   LOCATION: asia-northeast1-c
+   ENDPOINT_TYPE: GCE_VM_IP_PORT
+   SIZE: 3
+
+   NAME: asm-ingress-https-2
+   LOCATION: asia-northeast1-c
+   ENDPOINT_TYPE: GCE_VM_IP_PORT
+   SIZE: 3
+   ```
+
+
+
