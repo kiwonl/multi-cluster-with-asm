@@ -2,12 +2,12 @@
    ```
    # CLUSTER-1 for multi-cluster
    export PROJECT_1=kw-gke-prj
-   export CLUSTER_1=multi-neg-1
+   export CLUSTER_1=asm-multi-neg-1
    export LOCATION_1=us-central1-c
    
    # CLUSTER-2 for multi-cluster
    export PROJECT_2=kw-gke-prj
-   export CLUSTER_2=multi-neg-2
+   export CLUSTER_2=asm-multi-neg-2
    export LOCATION_2=asia-northeast1-c
 
    # namespace for application deploy
@@ -21,7 +21,7 @@
     --project=${PROJECT_1} \
     --zone=${LOCATION_1} \
     --machine-type=e2-standard-4 \
-    --num-nodes=2 \
+    --num-nodes=3 \
     --workload-pool=${PROJECT_1}.svc.id.goog
    ```
 
@@ -70,7 +70,7 @@
     --project=${PROJECT_2} \
     --zone=${LOCATION_2} \
     --machine-type=e2-standard-4 \
-    --num-nodes=2 \
+    --num-nodes=3 \
     --workload-pool=${PROJECT_2}.svc.id.goog
    ```
 - certify GKE ${CLUSTER_2}
@@ -149,6 +149,17 @@
    --ca mesh_ca
    ```
 
+   - [Injecting sidecar proxies](https://cloud.google.com/service-mesh/docs/proxy-injection)
+   ```
+   export REVISION=$(kubectl get deploy -n istio-system -l app=istiod -o jsonpath={.items[*].metadata.labels.'istio\.io\/rev'}'{"\n"}')
+   ## REVISION=asm-1120-4
+
+   kubectl --context=${CTX_1} label namespace ${NAMESPACE} istio.io/rev=${REVISION} --overwrite
+   kubectl --context=${CTX_1} rollout restart deployment helloworld-v1 --namespace ${NAMESPACE}
+   kubectl --context=${CTX_2} label namespace ${NAMESPACE} istio.io/rev=${REVISION} --overwrite
+   kubectl --context=${CTX_2} rollout restart deployment helloworld-v2 --namespace ${NAMESPACE}
+   ```
+
 ## 5. Setting for multi cluster mesh
 - [create firewall rule](https://cloud.google.com/service-mesh/docs/unified-install/gke-install-multi-cluster#create_firewall_rule)   
    ```
@@ -186,17 +197,6 @@
    NAME: multi-11
    EXTERNAL_ID: f98dcdfb-46a0-4ad8-b522-5f59d8f04ba8
    `````
-
-- [Injecting sidecar proxies](https://cloud.google.com/service-mesh/docs/proxy-injection)
-   ```
-   export REVISION=$(kubectl get deploy -n istio-system -l app=istiod -o jsonpath={.items[*].metadata.labels.'istio\.io\/rev'}'{"\n"}')
-   ## REVISION=asm-1120-4
-
-   kubectl --context=${CTX_1} label namespace ${NAMESPACE} istio.io/rev=${REVISION} --overwrite
-   kubectl --context=${CTX_1} rollout restart deployment helloworld-v1 --namespace ${NAMESPACE}
-   kubectl --context=${CTX_2} label namespace ${NAMESPACE} istio.io/rev=${REVISION} --overwrite
-   kubectl --context=${CTX_2} rollout restart deployment helloworld-v2 --namespace ${NAMESPACE}
-   ```
 
 ## 6. test for multi cluster mesh
 
@@ -249,7 +249,7 @@
 
    Gateways are user workloads, and as a best practice, they shouldn't be deployed in the control plane namespace. Enable auto-injection on the gateway by applying a a revision label on the gateway namespace. The revision label is used by the sidecar injector webhook to associate injected proxies with a particular control plane revision.
    ```
-   export GATEWAY_NAMESPACE=gateways
+   export GATEWAY_NAMESPACE=istio-ingress
 
    kubectl create namespace ${GATEWAY_NAMESPACE} --context=${CTX_1} 
    kubectl --context=${CTX_1} label namespace ${GATEWAY_NAMESPACE} istio.io/rev=${REVISION} --overwrite
@@ -308,19 +308,20 @@
 -------------------
 Create Ingressgateway as ClusteIP type instead of Load Balancer Type
    ```
-   export GATEWAY_NAMESPACE=gateways
+   export GATEWAY_NAMESPACE=istio-ingress
 
    kubectl create namespace ${GATEWAY_NAMESPACE} --context=${CTX_1} 
    kubectl --context=${CTX_1} label namespace ${GATEWAY_NAMESPACE} istio.io/rev=${REVISION} --overwrite
 
    kubectl apply --context=${CTX_1} -n ${GATEWAY_NAMESPACE} -f ./anthos-service-mesh/samples/gateways/istio-ingressgateway
+
    # change service of istio-ingressgateway
    kubectl apply --context=${CTX_1} -n ${GATEWAY_NAMESPACE} -f ./kube/istio-ingressgateway/service-for-istio-ingressgateway-1.yaml
 
    ```
 
    ```
-   export GATEWAY_NAMESPACE=gateways
+   export GATEWAY_NAMESPACE=istio-ingress
 
    kubectl create namespace ${GATEWAY_NAMESPACE} --context=${CTX_2} 
    kubectl --context=${CTX_2} label namespace ${GATEWAY_NAMESPACE} istio.io/rev=${REVISION} --overwrite
@@ -330,3 +331,24 @@ Create Ingressgateway as ClusteIP type instead of Load Balancer Type
    kubectl apply --context=${CTX_2} -n ${GATEWAY_NAMESPACE} -f ./kube/istio-ingressgateway/service-for-istio-ingressgateway-2.yaml
 
    ```
+   export GKE_NODE_NETWORK_TAGS_1=gke-asm-multi-neg-1-91a85778-node
+   export GKE_NODE_NETWORK_TAGS_2=gke-asm-multi-neg-2-f1cf644c-node
+
+   gcloud compute firewall-rules create fw-allow-health-check-and-proxy-for-cluster-1 \
+   --network=default \
+   --action=allow \
+   --direction=ingress \
+   --target-tags=${GKE_NODE_NETWORK_TAGS_1} \
+   --source-ranges=130.211.0.0/22,35.191.0.0/16 \
+   --rules=tcp:9376
+
+   gcloud compute firewall-rules create fw-allow-health-check-and-proxy-for-cluster-2 \
+   --network=default \
+   --action=allow \
+   --direction=ingress \
+   --target-tags=${GKE_NODE_NETWORK_TAGS_2} \
+   --source-ranges=130.211.0.0/22,35.191.0.0/16 \
+   --rules=tcp:9376
+   ```
+
+   

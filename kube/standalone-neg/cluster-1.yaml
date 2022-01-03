@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    run: neg-demo-app # Label for the Deployment
+  name: neg-demo-app # Name of Deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      run: neg-demo-app
+  template: # Pod template
+    metadata:
+      labels:
+        run: neg-demo-app # Labels Pods from this Deployment
+    spec: # Pod specification; each Pod created by this Deployment has this specification
+      containers:
+      - image: k8s.gcr.io/serve_hostname:v1.4 # Application to run in Deployment's Pods
+        name: hostname
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: neg-demo-svc
+  annotations:
+    cloud.google.com/neg: '{"exposed_ports": {"80":{"name": "gke-ingress-tcp-1"}}}'
+spec:
+  type: ClusterIP
+  selector:
+    run: neg-demo-app # Selects Pods labelled run: neg-demo-app
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 9376
