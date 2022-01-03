@@ -1,4 +1,4 @@
-## 1. Initial setting for Demo envirionment
+## 1. 데모 환경을 위한 환경 변수 세팅
    ```
    # CLUSTER-1 for multi-cluster
    export PROJECT_1=kw-gke-prj
@@ -14,7 +14,7 @@
    export NAMESPACE=sample
    ```
 
-## 2. Setting ${CLUSTER_1}
+## 2. Cluster_1 생성 및 설정
 - create GKE ${CLUSTER_1}
    ```
    gcloud container clusters create ${CLUSTER_1} \
