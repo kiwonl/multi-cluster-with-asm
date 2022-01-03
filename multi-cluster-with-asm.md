@@ -53,13 +53,13 @@
    service/helloworld   ClusterIP   10.8.5.194   <none>        5000/TCP   34s
 
    $ kubectl --context=${CTX_1} --namespace ${NAMESPACE} exec pod/helloworld-v1-776f57d5f6-2b6qk -it -- /bin/sh
-   # curl helloworld.sample.svc.cluster.local:5000/hello
+   # curl helloworld.sample.svc.cluster.local/hello
    Hello version: v1, instance: helloworld-v1-776f57d5f6-2b6qk
-   # curl helloworld.sample.svc.cluster.local:5000/hello
+   # curl helloworld.sample.svc.cluster.local/hello
    Hello version: v1, instance: helloworld-v1-776f57d5f6-2b6qk
-   # curl helloworld.sample.svc.cluster.local:5000/hello
+   # curl helloworld.sample.svc.cluster.local/hello
    Hello version: v1, instance: helloworld-v1-776f57d5f6-2b6qk
-   # curl helloworld.sample.svc.cluster.local:5000/hello
+   # curl helloworld.sample.svc.cluster.local/hello
    Hello version: v1, instance: helloworld-v1-776f57d5f6-2b6qk
    ```
 
@@ -100,13 +100,13 @@
    service/helloworld   ClusterIP   10.104.11.145   <none>        5000/TCP   59s
       
    $ kubectl --context=${CTX_2} --namespace ${NAMESPACE} exec pod/helloworld-v2-54df5f84b-t2c5g -it -- /bin/sh
-   # curl helloworld.sample.svc.cluster.local:5000/hello
+   # curl helloworld.sample.svc.cluster.local/hello
    Hello version: v2, instance: helloworld-v2-54df5f84b-t2c5g
-   # curl helloworld.sample.svc.cluster.local:5000/hello
+   # curl helloworld.sample.svc.cluster.local/hello
    Hello version: v2, instance: helloworld-v2-54df5f84b-t2c5g
-   # curl helloworld.sample.svc.cluster.local:5000/hello
+   # curl helloworld.sample.svc.cluster.local/hello
    Hello version: v2, instance: helloworld-v2-54df5f84b-t2c5g
-   # curl helloworld.sample.svc.cluster.local:5000/hello
+   # curl helloworld.sample.svc.cluster.local/hello
    Hello version: v2, instance: helloworld-v2-54df5f84b-t2c5g
    ```
 
@@ -204,7 +204,6 @@
 
    All traffic is forwared to pods(v1, v2) of the ${CLUSTER_1} and ${CLUSTER_2}
 
-
    ```
    $ kubectl get po,svc --context=${CTX_1} --namespace ${NAMESPACE}
    NAME                                READY   STATUS    RESTARTS   AGE
@@ -214,13 +213,13 @@
    service/helloworld   ClusterIP   10.8.5.194   <none>        5000/TCP   30m
   
    $ kubectl --context=${CTX_1} --namespace ${NAMESPACE} exec pod/helloworld-v1-686557cc7-h9hpg  -it -- /bin/sh
-   # curl helloworld.sample.svc.cluster.local:5000/hello
+   # curl helloworld.sample.svc.cluster.local/hello
    Hello version: v1, instance: helloworld-v1-686557cc7-h9hpg
-   # curl helloworld.sample.svc.cluster.local:5000/hello
+   # curl helloworld.sample.svc.cluster.local/hello
    Hello version: v2, instance: helloworld-v2-5c7f5c4f6d-wnzl5
-   # curl helloworld.sample.svc.cluster.local:5000/hello
+   # curl helloworld.sample.svc.cluster.local/hello
    Hello version: v1, instance: helloworld-v1-686557cc7-h9hpg
-   # curl helloworld.sample.svc.cluster.local:5000/hello
+   # curl helloworld.sample.svc.cluster.local/hello
    Hello version: v2, instance: helloworld-v2-5c7f5c4f6d-wnzl5 
    ```
 
@@ -233,15 +232,16 @@
    service/helloworld   ClusterIP   10.104.11.145   <none>        5000/TCP   26m
   
    $ kubectl --context=${CTX_2} --namespace ${NAMESPACE} exec pod/helloworld-v2-5c7f5c4f6d-wnzl5  -it -- /bin/sh
-   # curl helloworld.sample.svc.cluster.local:5000/hello
+   # curl helloworld.sample.svc.cluster.local/hello
    Hello version: v2, instance: helloworld-v2-5c7f5c4f6d-wnzl5
-   # curl helloworld.sample.svc.cluster.local:5000/hello
+   # curl helloworld.sample.svc.cluster.local/hello
    Hello version: v1, instance: helloworld-v1-686557cc7-h9hpg
-   # curl helloworld.sample.svc.cluster.local:5000/hello
+   # curl helloworld.sample.svc.cluster.local/hello
    Hello version: v2, instance: helloworld-v2-5c7f5c4f6d-wnzl5
-   # curl helloworld.sample.svc.cluster.local:5000/hello
+   # curl helloworld.sample.svc.cluster.local/hello
    Hello version: v1, instance: helloworld-v1-686557cc7-h9hpg
    ```
+
 
 ## 7. Install ingrss-gateway to ${CLUSTER-1} for multi cluster mesh
 
