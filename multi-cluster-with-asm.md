@@ -2,7 +2,7 @@
    ```
    # CLUSTER-1 for multi-cluster
    export PROJECT_1=kw-gke-prj
-   export CLUSTER_1=asm-multi-neg-1
+   export CLUSTER_1=asm-multi-neg-3
    export LOCATION_1=us-central1-c
    
    # CLUSTER-2 for multi-cluster
@@ -334,7 +334,23 @@ Create Ingressgateway as ClusteIP type instead of Load Balancer Type
    export GKE_NODE_NETWORK_TAGS_1=gke-asm-multi-neg-1-91a85778-node
    export GKE_NODE_NETWORK_TAGS_2=gke-asm-multi-neg-2-f1cf644c-node
 
-   gcloud compute firewall-rules create fw-allow-health-check-and-proxy-for-cluster-1 \
+   gcloud compute firewall-rules create fw-allow-health-check-and-proxy-for-cluster-1-80 \
+   --network=default \
+   --action=allow \
+   --direction=ingress \
+   --target-tags=${GKE_NODE_NETWORK_TAGS_1} \
+   --source-ranges=130.211.0.0/22,35.191.0.0/16 \
+   --rules=tcp:80
+
+   gcloud compute firewall-rules create fw-allow-health-check-and-proxy-for-cluster-2-80 \
+   --network=default \
+   --action=allow \
+   --direction=ingress \
+   --target-tags=${GKE_NODE_NETWORK_TAGS_2} \
+   --source-ranges=130.211.0.0/22,35.191.0.0/16 \
+   --rules=tcp:80
+
+   gcloud compute firewall-rules create fw-allow-health-check-and-proxy-for-cluster-1-15021 \
    --network=default \
    --action=allow \
    --direction=ingress \
@@ -342,13 +358,30 @@ Create Ingressgateway as ClusteIP type instead of Load Balancer Type
    --source-ranges=130.211.0.0/22,35.191.0.0/16 \
    --rules=tcp:15021
 
-   gcloud compute firewall-rules create fw-allow-health-check-and-proxy-for-cluster-2 \
+   gcloud compute firewall-rules create fw-allow-health-check-and-proxy-for-cluster-2-15021 \
    --network=default \
    --action=allow \
    --direction=ingress \
    --target-tags=${GKE_NODE_NETWORK_TAGS_2} \
    --source-ranges=130.211.0.0/22,35.191.0.0/16 \
    --rules=tcp:15021
+
+   gcloud compute firewall-rules create fw-allow-health-check-and-proxy-for-cluster-1-5000 \
+   --network=default \
+   --action=allow \
+   --direction=ingress \
+   --target-tags=${GKE_NODE_NETWORK_TAGS_1} \
+   --source-ranges=130.211.0.0/22,35.191.0.0/16 \
+   --rules=tcp:5000
+
+   gcloud compute firewall-rules create fw-allow-health-check-and-proxy-for-cluster-2-5000 \
+   --network=default \
+   --action=allow \
+   --direction=ingress \
+   --target-tags=${GKE_NODE_NETWORK_TAGS_2} \
+   --source-ranges=130.211.0.0/22,35.191.0.0/16 \
+   --rules=tcp:5000
+
    ```
 
    output
@@ -375,5 +408,11 @@ Create Ingressgateway as ClusteIP type instead of Load Balancer Type
    SIZE: 3
    ```
 
+
+
+
+Load Balancing --> CREATE LOAD BALANCER --> START CONFIGURATION ("HTTP(S) LOAD BALANCER")
+- From Internet to my VMs or serverless services
+- Classic HTTP(S) Load Balancer
 
 
