@@ -18,6 +18,7 @@ spec:
   # Any ports exposed in Gateway resources should be exposed here.
   - name: http2
     port: 80
+    targetPort: 5000
   selector:
     istio: ingressgateway
     app: istio-ingressgateway
