@@ -258,6 +258,15 @@
 
    ```
    ```
+   export GATEWAY_NAMESPACE=istio-ingress
+
+   kubectl create namespace ${GATEWAY_NAMESPACE} --context=${CTX_2} 
+   kubectl --context=${CTX_2} label namespace ${GATEWAY_NAMESPACE} istio.io/rev=${REVISION} --overwrite
+
+   kubectl apply --context=${CTX_2} -n ${GATEWAY_NAMESPACE} -f ./anthos-service-mesh/samples/gateways/istio-ingressgateway
+
+   ```
+   ```
    $ kubectl --context=${CTX_1} -n ${GATEWAY_NAMESPACE} get po,svc
    NAME                                        READY   STATUS    RESTARTS   AGE
    pod/istio-ingressgateway-66d9b945dc-6djt9   1/1     Running   0          58s
@@ -270,7 +279,9 @@
 
 - deploy Gateway, Virtual Service to ${CLUSTER_1} for ingress gateway
    ```
-   kubectl --context=${CTX_1} apply -f ./kube/istio.yaml --namespace ${NAMESPACE}
+   kubectl --context=${CTX_1} apply -f ./kube/istio-ingressgateway/north-south-ingress-1.yaml --namespace ${NAMESPACE}
+   kubectl --context=${CTX_2} apply -f ./kube/istio-ingressgateway/north-south-ingress-2.yaml --namespace ${NAMESPACE}
+
    ```
 
    output
@@ -415,8 +426,6 @@ Create Ingressgateway as ClusteIP type instead of Load Balancer Type
    ENDPOINT_TYPE: GCE_VM_IP_PORT
    SIZE: 3
    ```
-
-
 
 
 Load Balancing --> CREATE LOAD BALANCER --> START CONFIGURATION ("HTTP(S) LOAD BALANCER")

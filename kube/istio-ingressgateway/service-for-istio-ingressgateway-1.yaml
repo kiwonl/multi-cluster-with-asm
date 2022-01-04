@@ -4,7 +4,8 @@ metadata:
   name: istio-ingressgateway
   # add annotations to set NEGs
   annotations:
-    cloud.google.com/neg: '{"exposed_ports": {"80":{"name": "asm-ingress-http-1"}}}'
+    cloud.google.com/neg: '{"ingress": true}'
+    cloud.google.com/backend-config: '{"default": "ingress-backendconfig"}'
   labels:
     app: istio-ingressgateway
     istio: ingressgateway
