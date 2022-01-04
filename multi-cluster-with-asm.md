@@ -2,7 +2,7 @@
    ```
    # CLUSTER-1 for multi-cluster
    export PROJECT_1=kw-gke-prj
-   export CLUSTER_1=asm-multi-neg-3
+   export CLUSTER_1=asm-multi-neg-1
    export LOCATION_1=us-central1-c
    
    # CLUSTER-2 for multi-cluster
@@ -381,6 +381,14 @@ Create Ingressgateway as ClusteIP type instead of Load Balancer Type
    --target-tags=${GKE_NODE_NETWORK_TAGS_2} \
    --source-ranges=130.211.0.0/22,35.191.0.0/16 \
    --rules=tcp:5000
+
+   gcloud compute firewall-rules create istio-webhook \
+   --direction=INGRESS \
+   --priority=1000 \
+   --network=default \
+   --action=ALLOW \
+   --source-ranges=0.0.0.0/0 \
+   --rules=tcp:15017
 
    ```
 
