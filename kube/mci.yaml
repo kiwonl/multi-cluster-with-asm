@@ -1,0 +1,11 @@
+apiVersion: networking.gke.io/v1
+kind: MultiClusterIngress
+metadata:
+  name: mci-for-asm-ingressgateway
+spec:
+  template:
+    spec:
+      rules:
+      - backend:
+          serviceName: mcs-for-asm-ingressgateway
+          servicePort: 80
