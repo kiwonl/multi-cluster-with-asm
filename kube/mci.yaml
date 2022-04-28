@@ -5,7 +5,6 @@ metadata:
 spec:
   template:
     spec:
-      rules:
-      - backend:
-          serviceName: mcs-for-asm-ingressgateway
-          servicePort: 80
+      backend:
+        serviceName: mcs
+        servicePort: 80
