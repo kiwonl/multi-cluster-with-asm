@@ -1,0 +1,27 @@
+apiVersion: networking.gke.io/v1
+kind: MultiClusterService
+metadata:
+  name: mcs-for-asm-ingressgateway
+  namespace: sample
+spec:
+  template:
+    spec:
+     selector:
+        app: istio-ingressgateway
+        istio: ingressgateway
+      ports:
+      - name: status-port
+        nodePort: 30640
+        port: 15021
+        protocol: TCP
+        targetPort: 15021
+      - name: http2
+        nodePort: 30051
+        port: 80
+        protocol: TCP
+        targetPort: 80
+      - name: https
+        nodePort: 31968
+        port: 443
+        protocol: TCP
+        targetPort: 443
