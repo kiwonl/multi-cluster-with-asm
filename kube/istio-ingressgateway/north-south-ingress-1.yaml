@@ -25,6 +25,6 @@ spec:
   http:
   - route:
     - destination:
-        host: whereami.sample.svc.cluster.local
+        host: whereami-service.sample.svc.cluster.local
         port:
           number: 80
