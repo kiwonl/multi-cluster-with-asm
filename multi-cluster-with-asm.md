@@ -1,12 +1,12 @@
-## 1. 데모 환경을 위한 환경 변수 세팅
+## 1. ASM 멀티 클러스터 데모 환경을 위한 환경 변수 세팅
    ```
    # CLUSTER-1 for multi-cluster
-   export PROJECT_1=kw-gke-prj
+   export PROJECT_1=kwlee-goog-sandbox
    export CLUSTER_1=asm-multi-neg-1
    export LOCATION_1=us-central1-c
    
    # CLUSTER-2 for multi-cluster
-   export PROJECT_2=kw-gke-prj
+   export PROJECT_2=kwlee-goog-sandbox
    export CLUSTER_2=asm-multi-neg-2
    export LOCATION_2=asia-northeast1-c
 
@@ -14,7 +14,7 @@
    export NAMESPACE=sample
    ```
 
-## 2. Cluster_1 생성 및 설정
+## 2. Cluster_1 생성, 애플리케이션 배포(whereami)
 - create GKE ${CLUSTER_1}
    ```
    gcloud container clusters create ${CLUSTER_1} \
@@ -46,24 +46,37 @@
 
    ```
    $ kubectl get po,svc --context=${CTX_1} --namespace ${NAMESPACE}
-   NAME                                 READY   STATUS    RESTARTS   AGE
-   pod/helloworld-v1-776f57d5f6-2b6qk   1/1     Running   0          34s
+   NAME                                       READY   STATUS        RESTARTS   AGE
+   pod/whereami-deployment-86bc7496d8-86pxc   1/1     Running   0          6m34s
+   pod/whereami-deployment-86bc7496d8-9dffb   1/1     Running   0          29m
 
-   NAME                 TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)    AGE
-   service/helloworld   ClusterIP   10.8.5.194   <none>        5000/TCP   34s
+   NAME                       TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)   AGE
+   service/whereami-service   ClusterIP   10.24.8.127   <none>        80/TCP    76s
 
-   $ kubectl --context=${CTX_1} --namespace ${NAMESPACE} exec pod/helloworld-v1-776f57d5f6-2b6qk -it -- /bin/sh
-   # curl helloworld.sample.svc.cluster.local/hello
-   Hello version: v1, instance: helloworld-v1-776f57d5f6-2b6qk
-   # curl helloworld.sample.svc.cluster.local/hello
-   Hello version: v1, instance: helloworld-v1-776f57d5f6-2b6qk
-   # curl helloworld.sample.svc.cluster.local/hello
-   Hello version: v1, instance: helloworld-v1-776f57d5f6-2b6qk
-   # curl helloworld.sample.svc.cluster.local/hello
-   Hello version: v1, instance: helloworld-v1-776f57d5f6-2b6qk
+   $ kubectl --context=${CTX_1} --namespace ${NAMESPACE} exec pod/whereami-deployment-86bc7496d8-9dffb -it -- /bin/sh
+   $ curl whereami-service.sample.svc.cluster.local
+   {
+     "cluster_name": "asm-multi-neg-1",
+     "host_header": "whereami-service.sample.svc.cluster.local",
+     "pod_name": "whereami-deployment-86bc7496d8-86pxc",
+     "pod_name_emoji": "🇹🇴",
+     "project_id": "kwlee-goog-sandbox",
+     "timestamp": "2022-04-28T05:36:20",
+     "zone": "us-central1-c"
+   }
+   $ curl whereami-service.sample.svc.cluster.local
+   {
+     "cluster_name": "asm-multi-neg-1",
+     "host_header": "whereami-service.sample.svc.cluster.local",
+     "pod_name": "whereami-deployment-86bc7496d8-9dffb",
+     "pod_name_emoji": "👨⚖️",
+     "project_id": "kwlee-goog-sandbox",
+     "timestamp": "2022-04-28T05:36:21",
+     "zone": "us-central1-c"
+   }
    ```
 
-## 3. Setting ${CLUSTER_2}
+## 3. Cluster_2 생성, 애플리케이션 배포(whereami)
 - create GKE ${CLUSTER_2}
    ```
    gcloud container clusters create ${CLUSTER_2} \
@@ -93,27 +106,40 @@
    ***All traffic is forwared to pods(v2) within the ${CLUSTER_2}***
    ```
    $ kubectl get po,svc --context=${CTX_2} --namespace ${NAMESPACE}
-   NAME                                READY   STATUS    RESTARTS   AGE
-   pod/helloworld-v2-54df5f84b-t2c5g   1/1     Running   0          58s
-
-   NAME                 TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
-   service/helloworld   ClusterIP   10.104.11.145   <none>        5000/TCP   59s
+   NAME                                       READY   STATUS    RESTARTS   AGE
+   pod/whereami-deployment-86bc7496d8-m2knq   1/1     Running   0          21m
+   pod/whereami-deployment-86bc7496d8-xlsxh   1/1     Running   0          8m40s
+   
+   NAME                       TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)   AGE
+   service/whereami-service   ClusterIP   10.88.11.39   <none>        80/TCP    20s
       
-   $ kubectl --context=${CTX_2} --namespace ${NAMESPACE} exec pod/helloworld-v2-54df5f84b-t2c5g -it -- /bin/sh
-   # curl helloworld.sample.svc.cluster.local/hello
-   Hello version: v2, instance: helloworld-v2-54df5f84b-t2c5g
-   # curl helloworld.sample.svc.cluster.local/hello
-   Hello version: v2, instance: helloworld-v2-54df5f84b-t2c5g
-   # curl helloworld.sample.svc.cluster.local/hello
-   Hello version: v2, instance: helloworld-v2-54df5f84b-t2c5g
-   # curl helloworld.sample.svc.cluster.local/hello
-   Hello version: v2, instance: helloworld-v2-54df5f84b-t2c5g
+   $ kubectl --context=${CTX_2} --namespace ${NAMESPACE} exec pod/whereami-deployment-86bc7496d8-m2knq -it -- /bin/sh
+   $ curl whereami-service.sample.svc.cluster.local
+   {
+     "cluster_name": "asm-multi-neg-2",
+     "host_header": "whereami-service.sample.svc.cluster.local",
+     "pod_name": "whereami-deployment-86bc7496d8-xlsxh",
+     "pod_name_emoji": "💑🏾",
+     "project_id": "kwlee-goog-sandbox",
+     "timestamp": "2022-04-28T05:39:37",
+     "zone": "asia-northeast1-c"
+   }
+   $ curl whereami-service.sample.svc.cluster.local
+   {
+     "cluster_name": "asm-multi-neg-2",
+     "host_header": "whereami-service.sample.svc.cluster.local",
+     "pod_name": "whereami-deployment-86bc7496d8-m2knq",
+     "pod_name_emoji": "👨🏾⚕️",
+     "project_id": "kwlee-goog-sandbox",
+     "timestamp": "2022-04-28T05:39:38",
+     "zone": "asia-northeast1-c"
+   }
    ```
 
 ## 4. Install ASM
-- download asmcli to install ASM
+- [download asmcli](https://cloud.google.com/service-mesh/docs/unified-install/install-dependent-tools#download_asmcli) to install ASM
    ```
-   curl https://storage.googleapis.com/csm-artifacts/asm/asmcli_1.12 > asmcli
+   curl https://storage.googleapis.com/csm-artifacts/asm/asmcli_1.13 > asmcli
    chmod +x asmcli
    ```
 
@@ -152,22 +178,121 @@
    - [Injecting sidecar proxies](https://cloud.google.com/service-mesh/docs/proxy-injection)
    ```
    export REVISION=$(kubectl get deploy -n istio-system -l app=istiod -o jsonpath={.items[*].metadata.labels.'istio\.io\/rev'}'{"\n"}')
-   ## REVISION=asm-1120-4
+   ## REVISION=asm-1132-2
 
-   kubectl --context=${CTX_1} label namespace ${NAMESPACE} istio.io/rev=${REVISION} --overwrite
-   kubectl --context=${CTX_1} rollout restart deployment helloworld-v1 --namespace ${NAMESPACE}
-   kubectl --context=${CTX_2} label namespace ${NAMESPACE} istio.io/rev=${REVISION} --overwrite
-   kubectl --context=${CTX_2} rollout restart deployment helloworld-v2 --namespace ${NAMESPACE}
+   kubectl --context=${CTX_1} label namespace ${NAMESPACE} istio-injection- istio.io/rev=${REVISION} --overwrite
+   kubectl --context=${CTX_1} rollout restart deployment whereami-deployment --namespace ${NAMESPACE}
+   kubectl --context=${CTX_2} label namespace ${NAMESPACE} istio-injection- istio.io/rev=${REVISION} --overwrite
+   kubectl --context=${CTX_2} rollout restart deployment whereami-deployment --namespace ${NAMESPACE}
    ```
 
-## 5. Setting for multi cluster mesh
+   각 pod 마다 container 가 2개씩 (main container + sidecar) 생성된 것 확인
+   ```
+   $ kubectl get po,svc --context=${CTX_1} --namespace ${NAMESPACE}
+   NAME                                       READY   STATUS    RESTARTS   AGE
+   pod/whereami-deployment-5755d8b68b-kx4ss   2/2     Running   0          2m9s
+   pod/whereami-deployment-5755d8b68b-kxzzx   2/2     Running   0          2m12s
+
+   $ kubectl get po,svc --context=${CTX_2} --namespace ${NAMESPACE}
+   NAME                                       READY   STATUS    RESTARTS   AGE
+   pod/whereami-deployment-764cbfccdb-dw8ct   2/2     Running   0          2m2s
+   pod/whereami-deployment-764cbfccdb-vlzfg   2/2     Running   0          2m12s   
+   ```
+
+## 5. Install ingrss-gateway to ${CLUSTER-1}
+
+- [Install an ingress gateway](https://cloud.google.com/service-mesh/docs/gateways#deploy_gateways)
+
+   Gateways are user workloads, and as a best practice, they shouldn't be deployed in the control plane namespace. Enable auto-injection on the gateway by applying a a revision label on the gateway namespace. The revision label is used by the sidecar injector webhook to associate injected proxies with a particular control plane revision.
+   ```
+   export GATEWAY_NAMESPACE=istio-ingress
+
+   kubectl create namespace ${GATEWAY_NAMESPACE} --context=${CTX_1} 
+   kubectl --context=${CTX_1} label namespace ${GATEWAY_NAMESPACE} istio-injection- istio.io/rev=${REVISION} --overwrite
+
+   kubectl apply --context=${CTX_1} -n ${GATEWAY_NAMESPACE} -f ./anthos-service-mesh/samples/gateways/istio-ingressgateway
+
+   ```
+   
+   Output
+   ```
+   $ kubectl --context=${CTX_1} -n ${GATEWAY_NAMESPACE} get po,svc
+   NAME                                        READY   STATUS    RESTARTS   AGE
+   pod/istio-ingressgateway-66d9b945dc-46852   1/1     Running   0          31s
+   pod/istio-ingressgateway-66d9b945dc-ftn8z   1/1     Running   0          31s
+   pod/istio-ingressgateway-66d9b945dc-kfnsv   1/1     Running   0          31s
+
+   NAME                           TYPE           CLUSTER-IP    EXTERNAL-IP      PORT(S)                                      AGE
+   service/istio-ingressgateway   LoadBalancer   10.24.1.196   34.132.129.229   15021:30640/TCP,80:30051/TCP,443:31968/TCP   35s
+   ```
+   
+- deploy Gateway, Virtual Service to ${CLUSTER_1} for ingress gateway
+   ```
+   $ kubectl --context=${CTX_1} apply -f ./kube/istio-ingressgateway/north-south-ingress-1.yaml --namespace ${NAMESPACE}
+   $ kubectl --context=${CTX_1} --namespace ${NAMESPACE} get gateway,virtualservice
+   NAME                                           AGE
+   gateway.networking.istio.io/whereami-gateway   49s
+   
+   NAME                                             GATEWAYS            HOSTS   AGE
+   virtualservice.networking.istio.io/whereami-vs   ["whereami-gateway"]   ["*"]   46s
+   ```
+
+   istio-ingressgateway 의 주소로 호출
+   Cluster-1 으로 트래픽 전달 가능
+   <img src="./images/istio-ingressgateway.png" width=50% height=50%>
+
+   ```
+   $ curl 34.132.129.229
+   {
+     "cluster_name": "asm-multi-neg-1",
+     "host_header": "34.132.129.229",
+     "pod_name": "whereami-deployment-5755d8b68b-kxzzx",
+     "pod_name_emoji": "⏹",
+     "project_id": "kwlee-goog-sandbox",
+     "timestamp": "2022-04-28T06:22:41",
+     "zone": "us-central1-c"
+   }
+   $ curl 34.132.129.229
+   {
+     "cluster_name": "asm-multi-neg-1",
+     "host_header": "34.132.129.229",
+     "pod_name": "whereami-deployment-5755d8b68b-kx4ss",
+     "pod_name_emoji": "😅",
+     "project_id": "kwlee-goog-sandbox",
+     "timestamp": "2022-04-28T06:22:43",
+     "zone": "us-central1-c"
+   }
+   $ curl 34.132.129.229
+   {
+     "cluster_name": "asm-multi-neg-1",
+     "host_header": "34.132.129.229",
+     "pod_name": "whereami-deployment-5755d8b68b-kxzzx",
+     "pod_name_emoji": "⏹",
+     "project_id": "kwlee-goog-sandbox",
+     "timestamp": "2022-04-28T06:22:47",
+     "zone": "us-central1-c"
+   }
+   $ curl 34.132.129.229
+   {
+     "cluster_name": "asm-multi-neg-1",
+     "host_header": "34.132.129.229",
+     "pod_name": "whereami-deployment-5755d8b68b-kx4ss",
+     "pod_name_emoji": "😅",
+     "project_id": "kwlee-goog-sandbox",
+     "timestamp": "2022-04-28T06:22:51",
+     "zone": "us-central1-c"
+   }
+
+<img src="./images/north-south-asm.png" width=50% height=50%>
+
+## 6. Setting for multi cluster mesh
 - [create firewall rule](https://cloud.google.com/service-mesh/docs/unified-install/gke-install-multi-cluster#create_firewall_rule)   
    ```
    function join_by { local IFS="$1"; shift; echo "$*"; }
-   ALL_CLUSTER_CIDRS=$(for P in $PROJECT_1 $PROJECT_2; do gcloud --project $P container clusters list --filter="name:($CLUSTER_1,$CLUSTER_2)" --format='value(clusterIpv4Cidr)'; done | sort | uniq)
+   ALL_CLUSTER_CIDRS=$(gcloud container clusters list --project $PROJECT_1 --format='value(clusterIpv4Cidr)' | sort | uniq)
    ALL_CLUSTER_CIDRS=$(join_by , $(echo "${ALL_CLUSTER_CIDRS}"))
-   ALL_CLUSTER_NETTAGS=$(for P in $PROJECT_1 $PROJECT_2; do gcloud --project $P compute instances list  --filter="name:($CLUSTER_1,$CLUSTER_2)" --format='value(tags.items.[0])' ; done | sort | uniq)
-   ALL_CLUSTER_NETTAGS=$(join_by , $(echo "${ALL_CLUSTER_NETTAGS}"))
+   ALL_CLUSTER_NETTAGS=$(gcloud compute instances list --project $PROJECT_1 --format='value(tags.items.[0])' | sort | uniq)
+   ALL_CLUSTER_NETTAGS=$(join_by , $(echo "${ALL_CLUSTER_NETTAGS}"))   
    ```
 
    ```
@@ -188,14 +313,13 @@
    ```
    
    output
-
    ```
    $ gcloud container hub memberships list
-   NAME: multi-22
-   EXTERNAL_ID: 4f1e5a5d-f685-4467-a636-bb493d6cf8ec
+   NAME: asm-multi-neg-1
+   EXTERNAL_ID: f6b53133-1539-4ee9-b4d1-1eff69a3bbf4
 
-   NAME: multi-11
-   EXTERNAL_ID: f98dcdfb-46a0-4ad8-b522-5f59d8f04ba8
+   NAME: asm-multi-neg-2
+   EXTERNAL_ID: 203cea48-764c-456f-aede-057a12157ead
    `````
 
 ## 6. test for multi cluster mesh
@@ -205,94 +329,64 @@
    All traffic is forwared to pods(v1, v2) of the ${CLUSTER_1} and ${CLUSTER_2}
 
    ```
-   $ kubectl get po,svc --context=${CTX_1} --namespace ${NAMESPACE}
-   NAME                                READY   STATUS    RESTARTS   AGE
-   pod/helloworld-v1-686557cc7-h9hpg   2/2     Running   0          3m11s
-
-   NAME                 TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)    AGE
-   service/helloworld   ClusterIP   10.8.5.194   <none>        5000/TCP   30m
-  
-   $ kubectl --context=${CTX_1} --namespace ${NAMESPACE} exec pod/helloworld-v1-686557cc7-h9hpg  -it -- /bin/sh
-   # curl helloworld.sample.svc.cluster.local/hello
-   Hello version: v1, instance: helloworld-v1-686557cc7-h9hpg
-   # curl helloworld.sample.svc.cluster.local/hello
-   Hello version: v2, instance: helloworld-v2-5c7f5c4f6d-wnzl5
-   # curl helloworld.sample.svc.cluster.local/hello
-   Hello version: v1, instance: helloworld-v1-686557cc7-h9hpg
-   # curl helloworld.sample.svc.cluster.local/hello
-   Hello version: v2, instance: helloworld-v2-5c7f5c4f6d-wnzl5 
+   $ curl http://34.132.129.229/
+   {
+     "cluster_name": "asm-multi-neg-1",
+     "host_header": "34.132.129.229",
+     "pod_name": "whereami-deployment-5755d8b68b-kxzzx",
+     "pod_name_emoji": "⏹",
+     "project_id": "kwlee-goog-sandbox",
+     "timestamp": "2022-04-28T06:37:06",
+     "zone": "us-central1-c"
+   }
+   $ curl http://34.132.129.229/
+   {
+     "cluster_name": "asm-multi-neg-2",
+     "host_header": "34.132.129.229",
+     "pod_name": "whereami-deployment-764cbfccdb-vlzfg",
+     "pod_name_emoji": "🧑🏽✈",
+     "project_id": "kwlee-goog-sandbox",
+     "timestamp": "2022-04-28T06:37:08",
+     "zone": "asia-northeast1-c"
+   }
+   $ curl http://34.132.129.229/
+   {
+     "cluster_name": "asm-multi-neg-1",
+     "host_header": "34.132.129.229",
+     "pod_name": "whereami-deployment-5755d8b68b-kx4ss",
+     "pod_name_emoji": "😅",
+     "project_id": "kwlee-goog-sandbox",
+     "timestamp": "2022-04-28T06:37:10",
+     "zone": "us-central1-c"
+   }
+   $ curl http://34.132.129.229/
+   {
+     "cluster_name": "asm-multi-neg-2",
+     "host_header": "34.132.129.229",
+     "pod_name": "whereami-deployment-764cbfccdb-vlzfg",
+     "pod_name_emoji": "🧑🏽✈",
+     "project_id": "kwlee-goog-sandbox",
+     "timestamp": "2022-04-28T06:37:12",
+     "zone": "asia-northeast1-c"
+   }
    ```
 
-   ```
-   $ kubectl get po,svc --context=${CTX_2} --namespace ${NAMESPACE}
-   NAME                                 READY   STATUS    RESTARTS   AGE
-   pod/helloworld-v2-5c7f5c4f6d-wnzl5   2/2     Running   0          4m8s
-
-   NAME                 TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
-   service/helloworld   ClusterIP   10.104.11.145   <none>        5000/TCP   26m
-  
-   $ kubectl --context=${CTX_2} --namespace ${NAMESPACE} exec pod/helloworld-v2-5c7f5c4f6d-wnzl5  -it -- /bin/sh
-   # curl helloworld.sample.svc.cluster.local/hello
-   Hello version: v2, instance: helloworld-v2-5c7f5c4f6d-wnzl5
-   # curl helloworld.sample.svc.cluster.local/hello
-   Hello version: v1, instance: helloworld-v1-686557cc7-h9hpg
-   # curl helloworld.sample.svc.cluster.local/hello
-   Hello version: v2, instance: helloworld-v2-5c7f5c4f6d-wnzl5
-   # curl helloworld.sample.svc.cluster.local/hello
-   Hello version: v1, instance: helloworld-v1-686557cc7-h9hpg
-   ```
 
 
-## 7. Install ingrss-gateway to ${CLUSTER-1} for multi cluster mesh
 
-- [Install an ingress gateway](https://cloud.google.com/service-mesh/docs/gateways#deploy_gateways)
 
-   Gateways are user workloads, and as a best practice, they shouldn't be deployed in the control plane namespace. Enable auto-injection on the gateway by applying a a revision label on the gateway namespace. The revision label is used by the sidecar injector webhook to associate injected proxies with a particular control plane revision.
-   ```
-   export GATEWAY_NAMESPACE=istio-ingress
 
-   kubectl create namespace ${GATEWAY_NAMESPACE} --context=${CTX_1} 
-   kubectl --context=${CTX_1} label namespace ${GATEWAY_NAMESPACE} istio.io/rev=${REVISION} --overwrite
 
-   kubectl apply --context=${CTX_1} -n ${GATEWAY_NAMESPACE} -f ./anthos-service-mesh/samples/gateways/istio-ingressgateway
 
-   ```
-   ```
-   export GATEWAY_NAMESPACE=istio-ingress
 
-   kubectl create namespace ${GATEWAY_NAMESPACE} --context=${CTX_2} 
-   kubectl --context=${CTX_2} label namespace ${GATEWAY_NAMESPACE} istio.io/rev=${REVISION} --overwrite
 
-   kubectl apply --context=${CTX_2} -n ${GATEWAY_NAMESPACE} -f ./anthos-service-mesh/samples/gateways/istio-ingressgateway
 
-   ```
-   ```
-   $ kubectl --context=${CTX_1} -n ${GATEWAY_NAMESPACE} get po,svc
-   NAME                                        READY   STATUS    RESTARTS   AGE
-   pod/istio-ingressgateway-66d9b945dc-6djt9   1/1     Running   0          58s
-   pod/istio-ingressgateway-66d9b945dc-n2hxc   1/1     Running   0          58s
-   pod/istio-ingressgateway-66d9b945dc-qm7qj   1/1     Running   0          58s
 
-   NAME                           TYPE           CLUSTER-IP   EXTERNAL-IP     PORT(S)                                      AGE
-   service/istio-ingressgateway   LoadBalancer   10.36.0.79   35.226.73.109   15021:31594/TCP,80:30525/TCP,443:30317/TCP   58s
-   ```
 
-- deploy Gateway, Virtual Service to ${CLUSTER_1} for ingress gateway
-   ```
-   kubectl --context=${CTX_1} apply -f ./kube/istio-ingressgateway/north-south-ingress-1.yaml --namespace ${NAMESPACE}
-   kubectl --context=${CTX_2} apply -f ./kube/istio-ingressgateway/north-south-ingress-2.yaml --namespace ${NAMESPACE}
 
-   ```
 
-   output
-   ```
-   $ kubectl get gateway --context=${CTX_1} --namespace ${NAMESPACE}
-   NAME            AGE
-   hello-gateway   16s
-   
-   $ kubectl get virtualservice --context=${CTX_1} --namespace ${NAMESPACE}
-   NAME       GATEWAYS            HOSTS   AGE
-   hello-vs   ["hello-gateway"]   ["*"]   27s
+
+
    ```
 
 ## 6. test for multi cluster mesh throught Ingress Gateway
