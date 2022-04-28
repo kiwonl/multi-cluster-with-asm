@@ -5,7 +5,7 @@ metadata:
 spec:
   template:
     spec:
-     selector:
+      selector:
         app: istio-ingressgateway
         istio: ingressgateway
       ports:
