@@ -1,7 +1,7 @@
 apiVersion: networking.istio.io/v1beta1
 kind: Gateway
 metadata:
-  name: hello-gateway
+  name: whereami-gateway
 spec:
   selector:
     istio: ingressgateway
@@ -16,18 +16,15 @@ spec:
 apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
 metadata:
-  name: hello-vs
+  name: whereami-vs
 spec:
   hosts:
   - "*"
   gateways:
   - hello-gateway
   http:
-  - match:
-    - uri:
-        exact: /hello
-    route:
+  - route:
     - destination:
-        host: helloworld.sample.svc.cluster.local
+        host: whereami.sample.svc.cluster.local
         port:
-          number: 5000
+          number: 80
