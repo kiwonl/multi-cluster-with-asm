@@ -1,7 +1,7 @@
 apiVersion: networking.gke.io/v1
 kind: MultiClusterService
 metadata:
-  name: mcs-for-asm-ingressgateway
+  name: mcs
 spec:
   template:
     spec:
