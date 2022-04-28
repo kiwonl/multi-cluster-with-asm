@@ -1,11 +1,13 @@
-## 1. ASM 멀티 클러스터 데모 환경을 위한 환경 변수 세팅
+## 1. 멀티 클러스터 데모를 위한 환경 변수 설정
+- 단일 프로젝트 환경 에서 서로 다른 Region 에 있는 두 GKE 클러스터
+
    ```
-   # CLUSTER-1 for multi-cluster
+   # CLUSTER-1
    export PROJECT_1=kwlee-goog-sandbox
    export CLUSTER_1=asm-multi-neg-1
    export LOCATION_1=us-central1-c
    
-   # CLUSTER-2 for multi-cluster
+   # CLUSTER-2
    export PROJECT_2=kwlee-goog-sandbox
    export CLUSTER_2=asm-multi-neg-2
    export LOCATION_2=asia-northeast1-c
@@ -14,8 +16,10 @@
    export NAMESPACE=sample
    ```
 
-## 2. Cluster_1 생성, 애플리케이션 배포(whereami)
-- create GKE ${CLUSTER_1}
+## 2. Cluster_1 생성과 애플리케이션 배포(whereami)
+- GKE 클러스터 생성 ${CLUSTER_1}
+   - 클러스터 생성 시, [ASM 설치를 위한 클러스터 요구 사항](https://cloud.google.com/service-mesh/docs/unified-install/anthos-service-mesh-prerequisites#cluster_requirements) 참조 (Workload Identity, vCPU 4개 이상인 머신, 클러스터에 최소 8개의 vCPU 등)
+
    ```
    gcloud container clusters create ${CLUSTER_1} \
     --project=${PROJECT_1} \
@@ -24,8 +28,7 @@
     --num-nodes=3 \
     --workload-pool=${PROJECT_1}.svc.id.goog
    ```
-
-- certify GKE ${CLUSTER_1}
+- 생성한 클러스터의 인증정보와 엔드포인트 정보를 kubeconfig에 업데이트
    ```
    gcloud container clusters get-credentials ${CLUSTER_1} \
     --project=${PROJECT_1} \
@@ -34,16 +37,16 @@
    export CTX_1="gke_${PROJECT_1}_${LOCATION_1}_${CLUSTER_1}"
    ```
 
-- deploy application to ${NAMESPACE} namespace
+- namespace 생성, 애플리케이션 (whereami) 배포
+  - 두 클러스터에 동일한 namespace를 생성하고, 동일 namespace 에 애플리케이션을 배포함. [Namespace sameness](https://cloud.google.com/anthos/multicluster-management/fleets#namespace_sameness)
    ```
    kubectl create --context=${CTX_1} namespace ${NAMESPACE}
-   kubectl --context=${CTX_1} apply -f ./kube/cluster-1.yaml --namespace ${NAMESPACE}
+   kubectl --context=${CTX_1} apply -f ./kube/cluster.yaml --namespace ${NAMESPACE}
    ```
 
-- testing for ${CLUSTER_1}
+- 배포한 애플리케이션 동작 테스트
 
-   ***All traffic is forwared to pods(v2) within the ${CLUSTER_1}***
-
+   ***모든 트래픽은 클러스터 내의 Pod로만 전달됨***
    ```
    $ kubectl get po,svc --context=${CTX_1} --namespace ${NAMESPACE}
    NAME                                       READY   STATUS        RESTARTS   AGE
@@ -62,7 +65,7 @@
      "pod_name_emoji": "🇹🇴",
      "project_id": "kwlee-goog-sandbox",
      "timestamp": "2022-04-28T05:36:20",
-     "zone": "us-central1-c"
+     "zone": **"us-central1-c"**
    }
    $ curl whereami-service.sample.svc.cluster.local
    {
@@ -76,8 +79,8 @@
    }
    ```
 
-## 3. Cluster_2 생성, 애플리케이션 배포(whereami)
-- create GKE ${CLUSTER_2}
+## 3. Cluster_2 생성과 애플리케이션 배포(whereami)
+- GKE 클러스터 생성 ${CLUSTER_2}
    ```
    gcloud container clusters create ${CLUSTER_2} \
     --project=${PROJECT_2} \
@@ -86,7 +89,6 @@
     --num-nodes=3 \
     --workload-pool=${PROJECT_2}.svc.id.goog
    ```
-- certify GKE ${CLUSTER_2}
    ```
    gcloud container clusters get-credentials ${CLUSTER_2} \
     --project=${PROJECT_2} \
@@ -94,16 +96,13 @@
 
    export CTX_2="gke_${PROJECT_2}_${LOCATION_2}_${CLUSTER_2}"
    ```
-
-- deploy application to ${NAMESPACE} namespace
    ```
    kubectl create --context=${CTX_2} namespace ${NAMESPACE}
    kubectl --context=${CTX_2} apply -f ./kube/cluster-2.yaml --namespace ${NAMESPACE}
    ```
+- 배포한 애플리케이션 동작 테스트
 
-- testing for ${CLUSTER_2}
-
-   ***All traffic is forwared to pods(v2) within the ${CLUSTER_2}***
+   ***모든 트래픽은 클러스터 내의 Pod로만 전달됨***
    ```
    $ kubectl get po,svc --context=${CTX_2} --namespace ${NAMESPACE}
    NAME                                       READY   STATUS    RESTARTS   AGE
@@ -136,15 +135,13 @@
    }
    ```
 
-## 4. Install ASM
+## 4. ASM 설치
 - [download asmcli](https://cloud.google.com/service-mesh/docs/unified-install/install-dependent-tools#download_asmcli) to install ASM
    ```
    curl https://storage.googleapis.com/csm-artifacts/asm/asmcli_1.13 > asmcli
    chmod +x asmcli
    ```
-
 - install ASM to ${CLUSTER_1}.
-
    [macOS isn't supported for installation ASM](https://cloud.google.com/service-mesh/docs/unified-install/get-started#install_required_tools)
    Also, the ingress gateway is not installed now.
    ```
@@ -156,14 +153,6 @@
    --enable_all  \
    --ca mesh_ca
    ```
-   - Workloads
-
-      <img src="./images/multi-1-workloads.png" width=30% height=30%>
-
-   - Services
-
-      <img src="./images/multi-1-service.png" width=30% height=30%>   
-
 - install ASM to ${CLUSTER_2}.
    ```
    ./asmcli install \
@@ -174,8 +163,7 @@
    --enable_all  \
    --ca mesh_ca
    ```
-
-   - [Injecting sidecar proxies](https://cloud.google.com/service-mesh/docs/proxy-injection)
+- [Injecting sidecar proxies](https://cloud.google.com/service-mesh/docs/proxy-injection)
    ```
    export REVISION=$(kubectl get deploy -n istio-system -l app=istiod -o jsonpath={.items[*].metadata.labels.'istio\.io\/rev'}'{"\n"}')
    ## REVISION=asm-1132-2
@@ -186,7 +174,9 @@
    kubectl --context=${CTX_2} rollout restart deployment whereami-deployment --namespace ${NAMESPACE}
    ```
 
-   각 pod 마다 container 가 2개씩 (main container + sidecar) 생성된 것 확인
+-  Envoy Proxy 설치 확인
+ 
+  ***각 pod 마다 container 가 2개씩 (main container + sidecar) 생성된 것 확인***
    ```
    $ kubectl get po,svc --context=${CTX_1} --namespace ${NAMESPACE}
    NAME                                       READY   STATUS    RESTARTS   AGE
@@ -199,11 +189,11 @@
    pod/whereami-deployment-764cbfccdb-vlzfg   2/2     Running   0          2m12s   
    ```
 
-## 5. Install ingrss-gateway to ${CLUSTER-1}
+## 5. istio-ingrssgateway 설치, ${CLUSTER-1}에만
 
 - [Install an ingress gateway](https://cloud.google.com/service-mesh/docs/gateways#deploy_gateways)
-
-   Gateways are user workloads, and as a best practice, they shouldn't be deployed in the control plane namespace. Enable auto-injection on the gateway by applying a a revision label on the gateway namespace. The revision label is used by the sidecar injector webhook to associate injected proxies with a particular control plane revision.
+  - gateway 는 기본 설치가 아니기 때문에 ASM설치 이후, 별도 설치해야 함
+  - [설치 모범 사례 참조](https://cloud.google.com/service-mesh/docs/gateways#best_practices_for_deploying_gateways)
    ```
    export GATEWAY_NAMESPACE=istio-ingress
 
@@ -211,7 +201,6 @@
    kubectl --context=${CTX_1} label namespace ${GATEWAY_NAMESPACE} istio-injection- istio.io/rev=${REVISION} --overwrite
 
    kubectl apply --context=${CTX_1} -n ${GATEWAY_NAMESPACE} -f ./anthos-service-mesh/samples/gateways/istio-ingressgateway
-
    ```
    
    Output
@@ -225,10 +214,10 @@
    NAME                           TYPE           CLUSTER-IP    EXTERNAL-IP      PORT(S)                                      AGE
    service/istio-ingressgateway   LoadBalancer   10.24.1.196   34.132.129.229   15021:30640/TCP,80:30051/TCP,443:31968/TCP   35s
    ```
-   
-- deploy Gateway, Virtual Service to ${CLUSTER_1} for ingress gateway
+    
+- Gateway, VirtualService 정의
    ```
-   $ kubectl --context=${CTX_1} apply -f ./kube/istio-ingressgateway/north-south-ingress-1.yaml --namespace ${NAMESPACE}
+   $ kubectl --context=${CTX_1} apply -f ./kube/asm-nw-ingress.yaml --namespace ${NAMESPACE}
    $ kubectl --context=${CTX_1} --namespace ${NAMESPACE} get gateway,virtualservice
    NAME                                           AGE
    gateway.networking.istio.io/whereami-gateway   49s
@@ -236,11 +225,10 @@
    NAME                                             GATEWAYS            HOSTS   AGE
    virtualservice.networking.istio.io/whereami-vs   ["whereami-gateway"]   ["*"]   46s
    ```
-
-   istio-ingressgateway 의 주소로 호출
-   Cluster-1 으로 트래픽 전달 가능
-   <img src="./images/istio-ingressgateway.png" width=50% height=50%>
-
+ 
+- istio-ingressgateway 의 EXTERNAL-IP(L4 LoadBalancer)로 호출 확인 (34.132.129.229)
+ 
+   ***모든 트래픽은 클러스터 내의 Pod로만 전달됨,단 외부에서도 호출 가능***
    ```
    $ curl 34.132.129.229
    {
@@ -283,9 +271,12 @@
      "zone": "us-central1-c"
    }
 
-<img src="./images/north-south-asm.png" width=50% height=50%>
+![image](https://user-images.githubusercontent.com/61114855/165700747-4b4fbc3a-e3ad-41f4-85c0-05f1f4a8e282.png)
 
-## 6. Setting for multi cluster mesh
+
+## 6. 멀티 클러스터 메시 설정 
+- 두 클러스터를 단일 Anthos Service Mesh에 결합 하고 클러스터 간 부하 분산을 사용 설정
+
 - [create firewall rule](https://cloud.google.com/service-mesh/docs/unified-install/gke-install-multi-cluster#create_firewall_rule)   
    ```
    function join_by { local IFS="$1"; shift; echo "$*"; }
@@ -294,7 +285,6 @@
    ALL_CLUSTER_NETTAGS=$(gcloud compute instances list --project $PROJECT_1 --format='value(tags.items.[0])' | sort | uniq)
    ALL_CLUSTER_NETTAGS=$(join_by , $(echo "${ALL_CLUSTER_NETTAGS}"))   
    ```
-
    ```
    gcloud compute firewall-rules create istio-multicluster-pods \
     --allow=tcp,udp,icmp,esp,ah,sctp \
@@ -304,15 +294,14 @@
     --target-tags="${ALL_CLUSTER_NETTAGS}" --quiet
     ```
 
-- [configure endpoint discovery between clusters](https://cloud.google.com/service-mesh/docs/unified-install/gke-install-multi-cluster#configure_endpoint_discovery_between_clusters)
+- [클러스터간 엔드포인트 검색 구성](https://cloud.google.com/service-mesh/docs/unified-install/gke-install-multi-cluster#configure_endpoint_discovery_between_clusters)
    ```
    ./asmcli create-mesh \
     ${PROJECT_1} \
     ${PROJECT_1}/${LOCATION_1}/${CLUSTER_1} \
     ${PROJECT_2}/${LOCATION_2}/${CLUSTER_2}
-   ```
-   
-   output
+   ```   
+- 구성 확인
    ```
    $ gcloud container hub memberships list
    NAME: asm-multi-neg-1
@@ -322,11 +311,9 @@
    EXTERNAL_ID: 203cea48-764c-456f-aede-057a12157ead
    `````
 
-## 6. test for multi cluster mesh
+## 7. 멀티 클러스터 메시 테스트
 
-   <img src="./images/demo-1-design.png" width=30% height=30%>
-
-   All traffic is forwared to pods(v1, v2) of the ${CLUSTER_1} and ${CLUSTER_2}
+   ***모든 트래픽은 단일 메시로 설정한 두 클러스터 ${CLUSTER_1} 괴 ${CLUSTER_2}의 Pod로 전달됨***
 
    ```
    $ curl http://34.132.129.229/
@@ -371,41 +358,99 @@
    }
    ```
 
+![image](https://user-images.githubusercontent.com/61114855/165701312-8f5e8d8d-cb7e-48dc-aa4a-699f207c9d76.png)
 
 
 
 
 
 
+## 8. istio-ingrssgateway 설치, ${CLUSTER-2}에만
 
+- [Install an ingress gateway](https://cloud.google.com/service-mesh/docs/gateways#deploy_gateways)
+   ```
+   export GATEWAY_NAMESPACE=istio-ingress
 
+   kubectl create namespace ${GATEWAY_NAMESPACE} --context=${CTX_2} 
+   kubectl --context=${CTX_2} label namespace ${GATEWAY_NAMESPACE} istio-injection- istio.io/rev=${REVISION} --overwrite
 
-
-
-
-
-
-
+   kubectl apply --context=${CTX_2} -n ${GATEWAY_NAMESPACE} -f ./anthos-service-mesh/samples/gateways/istio-ingressgateway
 
    ```
-
-## 6. test for multi cluster mesh throught Ingress Gateway
+   
+   Output
    ```
-   $ curl http://35.226.73.109:80/hello
-   Hello version: v1, instance: helloworld-v1-7ddf67579d-8rr5x
+   $ kubectl --context=${CTX_2} -n ${GATEWAY_NAMESPACE} get po,svc
+   NAME                                        READY   STATUS    RESTARTS   AGE
+   pod/istio-ingressgateway-66d9b945dc-hlw7q   1/1     Running   0          8s
+   pod/istio-ingressgateway-66d9b945dc-jlmtg   1/1     Running   0          8s
+   pod/istio-ingressgateway-66d9b945dc-lnjxv   1/1     Running   0          8s
 
-   $ curl http://35.226.73.109:80/hello
-   Hello version: v2, instance: helloworld-v2-774d4fddd6-nxrmp
-
-   $ curl http://35.226.73.109:80/hello
-   Hello version: v1, instance: helloworld-v1-7ddf67579d-8rr5x
-
-   $ curl http://35.226.73.109:80/hello
-   Hello version: v2, instance: helloworld-v2-774d4fddd6-nxrmp
+   NAME                           TYPE           CLUSTER-IP    EXTERNAL-IP         PORT(S)                                      AGE
+   service/istio-ingressgateway   LoadBalancer   10.88.5.210   35.200.122.133      15021:32628/TCP,80:32344/TCP,443:32249/TCP   8s
    ```
-   <img src="./images/result-1.png" width=50% height=50%>
 
-   <img src="./images/result-2.png" width=50% height=50%>
+- Gateway, VirtualService 정의
+   ```
+   $ kubectl --context=${CTX_2} apply -f ./kube/asm-nw-ingress.yaml --namespace ${NAMESPACE}
+   $ kubectl --context=${CTX_2} --namespace ${NAMESPACE} get gateway,virtualservice
+   NAME                                           AGE
+   gateway.networking.istio.io/whereami-gateway   49s
+   
+   NAME                                             GATEWAYS            HOSTS   AGE
+   virtualservice.networking.istio.io/whereami-vs   ["whereami-gateway"]   ["*"]   46s
+   ```
+
+- istio-ingressgateway 의 EXTERNAL-IP(L4 LoadBalancer)로 호출 확인 (35.200.122.133)
+   ```
+   $ curl 35.200.122.133
+   {
+     "cluster_name": "asm-multi-neg-1",
+     "host_header": "35.200.122.133",
+     "pod_name": "whereami-deployment-5755d8b68b-kx4ss",
+     "pod_name_emoji": "😅",
+     "project_id": "kwlee-goog-sandbox",
+     "timestamp": "2022-04-28T07:39:46",
+     "zone": "us-central1-c"
+   }
+   admin_@cloudshell:~/multi-cluster-with-asm (kwlee-goog-sandbox)$ curl 35.200.122.133
+   {
+     "cluster_name": "asm-multi-neg-2",
+     "host_header": "35.200.122.133",
+     "pod_name": "whereami-deployment-764cbfccdb-vlzfg",
+     "pod_name_emoji": "🧑🏽✈",
+     "project_id": "kwlee-goog-sandbox",
+     "timestamp": "2022-04-28T07:39:48",
+     "zone": "asia-northeast1-c"
+   }
+   admin_@cloudshell:~/multi-cluster-with-asm (kwlee-goog-sandbox)$ curl 35.200.122.133
+   {
+     "cluster_name": "asm-multi-neg-2",
+     "host_header": "35.200.122.133",
+     "pod_name": "whereami-deployment-764cbfccdb-dw8ct",
+     "pod_name_emoji": "🤦🏾",
+     "project_id": "kwlee-goog-sandbox",
+     "timestamp": "2022-04-28T07:39:48",
+     "zone": "asia-northeast1-c"
+   }
+   admin_@cloudshell:~/multi-cluster-with-asm (kwlee-goog-sandbox)$ curl 35.200.122.133
+   {
+     "cluster_name": "asm-multi-neg-2",
+     "host_header": "35.200.122.133",
+     "pod_name": "whereami-deployment-764cbfccdb-dw8ct",
+     "pod_name_emoji": "🤦🏾",
+     "project_id": "kwlee-goog-sandbox",
+     "timestamp": "2022-04-28T07:39:49",
+     "zone": "asia-northeast1-c"
+   }
+   ```
+
+![image](https://user-images.githubusercontent.com/61114855/165702323-03ac1bdb-138e-41f1-9e98-5541a8518ae9.png)
+
+
+
+
+
 
 
 
