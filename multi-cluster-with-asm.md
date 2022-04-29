@@ -564,8 +564,9 @@
    ```
 기본적으로 HTTP Load Balancing 로 들어오는 요청은 클라이언트와 가장 가까운 PoP(GFE) 을 통해 가까운 지역의 클러스터로 들어감.
 현재 구성에서도 동일하지만, 클러스터 내부의 MultiClusterMesh 설정으로 인해 클라이언트 위치와 관계 없이 트래픽이 두 클러스터로 부하 분산됨
+multicluster mesh 를 설정하지 않으면, 단일 클러스로만 트래픽 전달됨..
 
-필요 시, istio-ingressgateway 의 Service Type 을 clusterip 로 변경하면, 추가적인 외부 접근을 막을 수 있음.
+필요 시, istio-ingressgateway 의 Service Type 을 clusterip 로 변경하면, 기존 생성한 L4 를 통한 외부 접근을 막을 수 있음.
 
 ![image](https://user-images.githubusercontent.com/61114855/165873399-7070e8fd-45e3-4d12-ae9f-82a420c36547.png)
 
