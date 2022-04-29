@@ -518,6 +518,7 @@
    $ kubectl --context=${CTX_1} --namespace=${NAMESPACE} describe mci mci-for-asm-ingressgateway | grep VIP
         f:VIP:
      VIP:        34.111.155.196
+   ```
    
    ```
    $ curl 34.111.155.196
