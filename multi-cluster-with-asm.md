@@ -567,7 +567,21 @@
 multicluster mesh 를 설정하지 않으면, 단일 클러스로만 트래픽 전달됨..
 
 필요 시, istio-ingressgateway 의 Service Type 을 clusterip 로 변경하면, 기존 생성한 L4 를 통한 외부 접근을 막을 수 있음.
-
+   ```
+   $ kubectl --context=${CTX_1} --namespace=${NAMESPACE} get svc
+   NAME                           TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)                    AGE
+   istio-ingressgateway           ClusterIP   10.76.6.163   <none>        15021/TCP,80/TCP,443/TCP   88m
+   mci-mcs-svc-6v1bymw1gtk1xw8k   ClusterIP   None          <none>        15021/TCP,80/TCP,443/TCP   69m
+   whereami-service               ClusterIP   10.76.9.249   <none>        80/TCP                     121m
+   
+   $ kubectl --context=${CTX_2} --namespace=${NAMESPACE} get svc
+   NAME                           TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)                    AGE
+   istio-ingressgateway           ClusterIP   10.96.12.66   <none>        15021/TCP,80/TCP,443/TCP   78m
+   mci-mcs-svc-6v1bymw1gtk1xw8k   ClusterIP   None          <none>        15021/TCP,80/TCP,443/TCP   69m
+   whereami-service               ClusterIP   10.96.9.147   <none>        80/TCP                     110m
+   admin_@cloudshell:~/multi-cluster-with-asm (kwlee-goog-sandbox)$
+   ```
+ 
 ![image](https://user-images.githubusercontent.com/61114855/165873399-7070e8fd-45e3-4d12-ae9f-82a420c36547.png)
 
 
