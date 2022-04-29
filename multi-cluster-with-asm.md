@@ -4,16 +4,16 @@
    ```
    # CLUSTER-1
    export PROJECT_1=kwlee-goog-sandbox
-   export CLUSTER_1=asm-multi-neg-1
+   export CLUSTER_1=multi-cluster-demo-us
    export LOCATION_1=us-central1-c
    
    # CLUSTER-2
    export PROJECT_2=kwlee-goog-sandbox
-   export CLUSTER_2=asm-multi-neg-2
+   export CLUSTER_2=multi-cluster-demo-asia
    export LOCATION_2=asia-northeast1-c
 
    # namespace for application deploy
-   export NAMESPACE=sample
+   export NAMESPACE=whereami
    ```
 
 ## 2. Cluster_1 생성과 애플리케이션 배포(whereami)
@@ -41,7 +41,7 @@
   - 두 클러스터에 동일한 namespace를 생성하고, 동일 namespace 에 애플리케이션을 배포함. [Namespace sameness](https://cloud.google.com/anthos/multicluster-management/fleets#namespace_sameness)
    ```
    kubectl create --context=${CTX_1} namespace ${NAMESPACE}
-   kubectl --context=${CTX_1} apply -f ./kube/cluster.yaml --namespace ${NAMESPACE}
+   kubectl --context=${CTX_1} apply -f ./kube/whereami.yaml --namespace ${NAMESPACE}
    ```
 
 - 배포한 애플리케이션 동작 테스트
@@ -57,20 +57,20 @@
    service/whereami-service   ClusterIP   10.24.8.127   <none>        80/TCP    76s
 
    $ kubectl --context=${CTX_1} --namespace ${NAMESPACE} exec pod/whereami-deployment-86bc7496d8-9dffb -it -- /bin/sh
-   $ curl whereami-service.sample.svc.cluster.local
+   $ curl whereami-service.whereami.svc.cluster.local
    {
-     "cluster_name": "asm-multi-neg-1",
-     "host_header": "whereami-service.sample.svc.cluster.local",
+     "cluster_name": "multi-cluster-demo-us",
+     "host_header": "whereami-service.whereami.svc.cluster.local",
      "pod_name": "whereami-deployment-86bc7496d8-86pxc",
      "pod_name_emoji": "🇹🇴",
      "project_id": "kwlee-goog-sandbox",
      "timestamp": "2022-04-28T05:36:20",
-     "zone": **"us-central1-c"**
+     "zone": "us-central1-c"
    }
-   $ curl whereami-service.sample.svc.cluster.local
+   $ curl whereami-service.whereami.svc.cluster.local
    {
-     "cluster_name": "asm-multi-neg-1",
-     "host_header": "whereami-service.sample.svc.cluster.local",
+     "cluster_name": "multi-cluster-demo-us",
+     "host_header": "whereami-service.whereami.svc.cluster.local",
      "pod_name": "whereami-deployment-86bc7496d8-9dffb",
      "pod_name_emoji": "👨⚖️",
      "project_id": "kwlee-goog-sandbox",
@@ -98,7 +98,7 @@
    ```
    ```
    kubectl create --context=${CTX_2} namespace ${NAMESPACE}
-   kubectl --context=${CTX_2} apply -f ./kube/cluster-2.yaml --namespace ${NAMESPACE}
+   kubectl --context=${CTX_2} apply -f ./kube/whereami.yaml --namespace ${NAMESPACE}
    ```
 - 배포한 애플리케이션 동작 테스트
 
@@ -113,20 +113,20 @@
    service/whereami-service   ClusterIP   10.88.11.39   <none>        80/TCP    20s
       
    $ kubectl --context=${CTX_2} --namespace ${NAMESPACE} exec pod/whereami-deployment-86bc7496d8-m2knq -it -- /bin/sh
-   $ curl whereami-service.sample.svc.cluster.local
+   $ curl whereami-service.whereami.svc.cluster.local
    {
-     "cluster_name": "asm-multi-neg-2",
-     "host_header": "whereami-service.sample.svc.cluster.local",
+     "cluster_name": "multi-cluster-demo-asia",
+     "host_header": "whereami-service.whereami.svc.cluster.local",
      "pod_name": "whereami-deployment-86bc7496d8-xlsxh",
      "pod_name_emoji": "💑🏾",
      "project_id": "kwlee-goog-sandbox",
      "timestamp": "2022-04-28T05:39:37",
      "zone": "asia-northeast1-c"
    }
-   $ curl whereami-service.sample.svc.cluster.local
+   $ curl whereami-service.whereami.svc.cluster.local
    {
-     "cluster_name": "asm-multi-neg-2",
-     "host_header": "whereami-service.sample.svc.cluster.local",
+     "cluster_name": "multi-cluster-demo-asia",
+     "host_header": "whereami-service.whereami.svc.cluster.local",
      "pod_name": "whereami-deployment-86bc7496d8-m2knq",
      "pod_name_emoji": "👨🏾⚕️",
      "project_id": "kwlee-goog-sandbox",
@@ -232,7 +232,7 @@
    ```
    $ curl 34.132.129.229
    {
-     "cluster_name": "asm-multi-neg-1",
+     "cluster_name": "multi-cluster-demo-us",
      "host_header": "34.132.129.229",
      "pod_name": "whereami-deployment-5755d8b68b-kxzzx",
      "pod_name_emoji": "⏹",
@@ -242,7 +242,7 @@
    }
    $ curl 34.132.129.229
    {
-     "cluster_name": "asm-multi-neg-1",
+     "cluster_name": "multi-cluster-demo-us",
      "host_header": "34.132.129.229",
      "pod_name": "whereami-deployment-5755d8b68b-kx4ss",
      "pod_name_emoji": "😅",
@@ -252,7 +252,7 @@
    }
    $ curl 34.132.129.229
    {
-     "cluster_name": "asm-multi-neg-1",
+     "cluster_name": "multi-cluster-demo-us",
      "host_header": "34.132.129.229",
      "pod_name": "whereami-deployment-5755d8b68b-kxzzx",
      "pod_name_emoji": "⏹",
@@ -262,7 +262,7 @@
    }
    $ curl 34.132.129.229
    {
-     "cluster_name": "asm-multi-neg-1",
+     "cluster_name": "multi-cluster-demo-us",
      "host_header": "34.132.129.229",
      "pod_name": "whereami-deployment-5755d8b68b-kx4ss",
      "pod_name_emoji": "😅",
@@ -304,11 +304,11 @@
 - 구성 확인
    ```
    $ gcloud container hub memberships list
-   NAME: asm-multi-neg-1
-   EXTERNAL_ID: f6b53133-1539-4ee9-b4d1-1eff69a3bbf4
+   NAME: multi-cluster-demo-us
+   EXTERNAL_ID: 43f55ae6-fc47-4fa6-b144-dabd47452d9a
 
-   NAME: asm-multi-neg-2
-   EXTERNAL_ID: 203cea48-764c-456f-aede-057a12157ead
+   NAME: multi-cluster-demo-asia
+   EXTERNAL_ID: 461327dc-8ab5-474b-afa5-ea182c502e8c
    `````
 
 ## 7. 멀티 클러스터 메시 테스트
@@ -318,7 +318,7 @@
    ```
    $ curl http://34.132.129.229/
    {
-     "cluster_name": "asm-multi-neg-1",
+     "cluster_name": "multi-cluster-demo-us",
      "host_header": "34.132.129.229",
      "pod_name": "whereami-deployment-5755d8b68b-kxzzx",
      "pod_name_emoji": "⏹",
@@ -328,7 +328,7 @@
    }
    $ curl http://34.132.129.229/
    {
-     "cluster_name": "asm-multi-neg-2",
+     "cluster_name": "multi-cluster-demo-asia",
      "host_header": "34.132.129.229",
      "pod_name": "whereami-deployment-764cbfccdb-vlzfg",
      "pod_name_emoji": "🧑🏽✈",
@@ -338,7 +338,7 @@
    }
    $ curl http://34.132.129.229/
    {
-     "cluster_name": "asm-multi-neg-1",
+     "cluster_name": "multi-cluster-demo-us",
      "host_header": "34.132.129.229",
      "pod_name": "whereami-deployment-5755d8b68b-kx4ss",
      "pod_name_emoji": "😅",
@@ -348,7 +348,7 @@
    }
    $ curl http://34.132.129.229/
    {
-     "cluster_name": "asm-multi-neg-2",
+     "cluster_name": "multi-cluster-demo-asia",
      "host_header": "34.132.129.229",
      "pod_name": "whereami-deployment-764cbfccdb-vlzfg",
      "pod_name_emoji": "🧑🏽✈",
@@ -359,10 +359,6 @@
    ```
 
 ![image](https://user-images.githubusercontent.com/61114855/165701312-8f5e8d8d-cb7e-48dc-aa4a-699f207c9d76.png)
-
-
-
-
 
 
 ## 8. istio-ingrssgateway 설치, ${CLUSTER-2}에만
@@ -405,7 +401,7 @@
    ```
    $ curl 35.200.122.133
    {
-     "cluster_name": "asm-multi-neg-1",
+     "cluster_name": "multi-cluster-demo-us",
      "host_header": "35.200.122.133",
      "pod_name": "whereami-deployment-5755d8b68b-kx4ss",
      "pod_name_emoji": "😅",
@@ -413,9 +409,9 @@
      "timestamp": "2022-04-28T07:39:46",
      "zone": "us-central1-c"
    }
-   admin_@cloudshell:~/multi-cluster-with-asm (kwlee-goog-sandbox)$ curl 35.200.122.133
+   $ curl 35.200.122.133
    {
-     "cluster_name": "asm-multi-neg-2",
+     "cluster_name": "multi-cluster-demo-asia",
      "host_header": "35.200.122.133",
      "pod_name": "whereami-deployment-764cbfccdb-vlzfg",
      "pod_name_emoji": "🧑🏽✈",
@@ -423,9 +419,9 @@
      "timestamp": "2022-04-28T07:39:48",
      "zone": "asia-northeast1-c"
    }
-   admin_@cloudshell:~/multi-cluster-with-asm (kwlee-goog-sandbox)$ curl 35.200.122.133
+   $ curl 35.200.122.133
    {
-     "cluster_name": "asm-multi-neg-2",
+     "cluster_name": "multi-cluster-demo-asia",
      "host_header": "35.200.122.133",
      "pod_name": "whereami-deployment-764cbfccdb-dw8ct",
      "pod_name_emoji": "🤦🏾",
@@ -433,9 +429,9 @@
      "timestamp": "2022-04-28T07:39:48",
      "zone": "asia-northeast1-c"
    }
-   admin_@cloudshell:~/multi-cluster-with-asm (kwlee-goog-sandbox)$ curl 35.200.122.133
+   $ curl 35.200.122.133
    {
-     "cluster_name": "asm-multi-neg-2",
+     "cluster_name": "multi-cluster-demo-asia",
      "host_header": "35.200.122.133",
      "pod_name": "whereami-deployment-764cbfccdb-dw8ct",
      "pod_name_emoji": "🤦🏾",
@@ -448,127 +444,130 @@
 ![image](https://user-images.githubusercontent.com/61114855/165702323-03ac1bdb-138e-41f1-9e98-5541a8518ae9.png)
 
 
-
-
-
-
-
-
-
--------------------
-Create Ingressgateway as ClusteIP type instead of Load Balancer Type
+## 9. MultiClusterIngress 설정
+- fleet 에 이미 등록했기 때문에, [fleet 에 클러스터 등록](https://cloud.google.com/kubernetes-engine/docs/how-to/multi-cluster-ingress-setup#fleet-registration) 은 skip
+   - 정상 등록 여부만 아래에서 확인
    ```
-   export GATEWAY_NAMESPACE=istio-ingress
+   $ gcloud container hub memberships list --project=${PROJECT_1}
+   NAME: multi-cluster-demo-us
+   EXTERNAL_ID: 43f55ae6-fc47-4fa6-b144-dabd47452d9a
 
-   kubectl create namespace ${GATEWAY_NAMESPACE} --context=${CTX_1} 
-   kubectl --context=${CTX_1} label namespace ${GATEWAY_NAMESPACE} istio.io/rev=${REVISION} --overwrite
-
-   kubectl apply --context=${CTX_1} -n ${GATEWAY_NAMESPACE} -f ./anthos-service-mesh/samples/gateways/istio-ingressgateway
-
-   # change service of istio-ingressgateway
-   kubectl apply --context=${CTX_1} -n ${GATEWAY_NAMESPACE} -f ./kube/istio-ingressgateway/service-for-istio-ingressgateway-1.yaml
-
+   NAME: multi-cluster-demo-asia
+   EXTERNAL_ID: 461327dc-8ab5-474b-afa5-ea182c502e8c
    ```
 
+- [ConfigCluster 지정](https://cloud.google.com/kubernetes-engine/docs/how-to/multi-cluster-ingress-setup#specifying_a_config_cluster)
    ```
-   export GATEWAY_NAMESPACE=istio-ingress
+   $ gcloud beta container hub ingress enable --config-membership=${CLUSTER_1}
+   $ gcloud beta container hub ingress update
 
-   kubectl create namespace ${GATEWAY_NAMESPACE} --context=${CTX_2} 
-   kubectl --context=${CTX_2} label namespace ${GATEWAY_NAMESPACE} istio.io/rev=${REVISION} --overwrite
-
-   kubectl apply --context=${CTX_2} -n ${GATEWAY_NAMESPACE} -f ./anthos-service-mesh/samples/gateways/istio-ingressgateway
-   # change service of istio-ingressgateway
-   kubectl apply --context=${CTX_2} -n ${GATEWAY_NAMESPACE} -f ./kube/istio-ingressgateway/service-for-istio-ingressgateway-2.yaml
-
+   $ gcloud beta container hub ingress describe
+   createTime: '2021-08-19T07:28:13.980348616Z'
+   membershipStates:
+     projects/852689693404/locations/global/memberships/asm-multi-neg-1:
+       state:
+         code: OK
+         updateTime: '2022-04-28T08:06:12.073973312Z'
+     projects/852689693404/locations/global/memberships/asm-multi-neg-2:
+       state:
+         code: OK
+         updateTime: '2022-04-28T08:06:12.073974684Z'
+   name: projects/kwlee-goog-sandbox/locations/global/features/multiclusteringress
+   resourceState:
+     state: ACTIVE
+   spec:
+     multiclusteringress:
+       configMembership: projects/kwlee-goog-sandbox/locations/global/memberships/asm-multi-neg-1
+   state:
+     state:
+       code: OK
+       description: Ready to use
+       updateTime: '2022-04-28T08:05:01.291033008Z'
+   updateTime: '2022-04-28T08:06:22.733507873Z'
    ```
-   export GKE_NODE_NETWORK_TAGS_1=gke-asm-multi-neg-1-91a85778-node
-   export GKE_NODE_NETWORK_TAGS_2=gke-asm-multi-neg-2-f1cf644c-node
+   만약 [AVMBR111](https://cloud.google.com/kubernetes-engine/docs/how-to/troubleshooting-and-ops#avmbr111_failed_to_get_config_membership_reason) 에러 발생 시, 해당 링크 참조
 
-   gcloud compute firewall-rules create fw-allow-health-check-and-proxy-for-cluster-1-80 \
-   --network=default \
-   --action=allow \
-   --direction=ingress \
-   --target-tags=${GKE_NODE_NETWORK_TAGS_1} \
-   --source-ranges=130.211.0.0/22,35.191.0.0/16 \
-   --rules=tcp:80
-
-   gcloud compute firewall-rules create fw-allow-health-check-and-proxy-for-cluster-2-80 \
-   --network=default \
-   --action=allow \
-   --direction=ingress \
-   --target-tags=${GKE_NODE_NETWORK_TAGS_2} \
-   --source-ranges=130.211.0.0/22,35.191.0.0/16 \
-   --rules=tcp:80
-
-   gcloud compute firewall-rules create fw-allow-health-check-and-proxy-for-cluster-1-15021 \
-   --network=default \
-   --action=allow \
-   --direction=ingress \
-   --target-tags=${GKE_NODE_NETWORK_TAGS_1} \
-   --source-ranges=130.211.0.0/22,35.191.0.0/16 \
-   --rules=tcp:15021
-
-   gcloud compute firewall-rules create fw-allow-health-check-and-proxy-for-cluster-2-15021 \
-   --network=default \
-   --action=allow \
-   --direction=ingress \
-   --target-tags=${GKE_NODE_NETWORK_TAGS_2} \
-   --source-ranges=130.211.0.0/22,35.191.0.0/16 \
-   --rules=tcp:15021
-
-   gcloud compute firewall-rules create fw-allow-health-check-and-proxy-for-cluster-1-5000 \
-   --network=default \
-   --action=allow \
-   --direction=ingress \
-   --target-tags=${GKE_NODE_NETWORK_TAGS_1} \
-   --source-ranges=130.211.0.0/22,35.191.0.0/16 \
-   --rules=tcp:5000
-
-   gcloud compute firewall-rules create fw-allow-health-check-and-proxy-for-cluster-2-5000 \
-   --network=default \
-   --action=allow \
-   --direction=ingress \
-   --target-tags=${GKE_NODE_NETWORK_TAGS_2} \
-   --source-ranges=130.211.0.0/22,35.191.0.0/16 \
-   --rules=tcp:5000
-
-   gcloud compute firewall-rules create istio-webhook \
-   --direction=INGRESS \
-   --priority=1000 \
-   --network=default \
-   --action=ALLOW \
-   --source-ranges=0.0.0.0/0 \
-   --rules=tcp:15017
-
+- MCS 생성
+  - ConfigCluster 에 MCS 를 생성하면, fleet 에 등록된 클러스터들에 Headless Service 가 생성
+   ```
+   $ kubectl apply -f ./kube/mcs.yaml --context=${CTX_1} --namespace=${NAMESPACE} 
+   multiclusterservice.networking.gke.io/mcs-for-asm-ingressgateway created
+   
+   kubectl --context=${CTX_1} get mcs --namespace=${GATEWAY_NAMESPACE}
+   NAME                         AGE
+   mcs-for-asm-ingressgateway   15s
+   
+   $ kubectl --context=${CTX_1} --namespace=${NAMESPACE} get svc
+   NAME                           TYPE           CLUSTER-IP    EXTERNAL-IP    PORT(S)                                      AGE
+   istio-ingressgateway           LoadBalancer   10.76.6.163   34.69.217.99   15021:32737/TCP,80:31856/TCP,443:31521/TCP   19m
+   mci-mcs-svc-6v1bymw1gtk1xw8k   ClusterIP      None          <none>         15021/TCP,80/TCP,443/TCP                     39s
+   whereami-service               ClusterIP      10.76.9.249   <none>         80/TCP                                       51m
+   
+   $ kubectl --context=${CTX_2} --namespace=${NAMESPACE} get svc
+   NAME                           TYPE           CLUSTER-IP    EXTERNAL-IP     PORT(S)                                      AGE
+   istio-ingressgateway           LoadBalancer   10.96.12.66   35.243.92.154   15021:32620/TCP,80:32518/TCP,443:32409/TCP   8m55s
+   mci-mcs-svc-6v1bymw1gtk1xw8k   ClusterIP      None          <none>          15021/TCP,80/TCP,443/TCP                     51s
+   whereami-service               ClusterIP      10.96.9.147   <none>          80/TCP                                       41m
    ```
 
-   output
+- MCI 생성
    ```
-   $ gcloud compute network-endpoint-groups list
-   NAME: asm-ingress-http-1
-   LOCATION: us-central1-c
-   ENDPOINT_TYPE: GCE_VM_IP_PORT
-   SIZE: 3
-
-   NAME: asm-ingress-https-1
-   LOCATION: us-central1-c
-   ENDPOINT_TYPE: GCE_VM_IP_PORT
-   SIZE: 3
-
-   NAME: asm-ingress-http-2
-   LOCATION: asia-northeast1-c
-   ENDPOINT_TYPE: GCE_VM_IP_PORT
-   SIZE: 3
-
-   NAME: asm-ingress-https-2
-   LOCATION: asia-northeast1-c
-   ENDPOINT_TYPE: GCE_VM_IP_PORT
-   SIZE: 3
+   $ kubectl apply -f ./kube/mci.yaml --context=${CTX_1} --namespace=${NAMESPACE} 
+   multiclusteringress.networking.gke.io/mci-for-asm-ingressgateway created
+   
+   $ kubectl --context=${CTX_1} --namespace=${NAMESPACE} describe mci mci-for-asm-ingressgateway | grep VIP
+        f:VIP:
+     VIP:        34.111.155.196
+   
    ```
+   $ curl 34.111.155.196
+   {
+     "cluster_name": "multi-cluster-demo-asia",
+     "host_header": "34.111.155.196",
+     "pod_name": "whereami-deployment-895464769-d98jj",
+     "pod_name_emoji": "☸️",
+     "project_id": "kwlee-goog-sandbox",
+     "timestamp": "2022-04-29T01:27:15",
+     "zone": "asia-northeast1-c"
+   }
+   $ curl 34.111.155.196
+   {
+     "cluster_name": "multi-cluster-demo-asia",
+     "host_header": "34.111.155.196",
+     "pod_name": "whereami-deployment-895464769-d98jj",
+     "pod_name_emoji": "☸️",
+     "project_id": "kwlee-goog-sandbox",
+     "timestamp": "2022-04-29T01:27:15",
+     "zone": "asia-northeast1-c"
+   }
+   $ curl 34.111.155.196
+   {
+     "cluster_name": "multi-cluster-demo-us",
+     "host_header": "34.111.155.196",
+     "pod_name": "whereami-deployment-895464769-7mbf7",
+     "pod_name_emoji": "⛸️",
+     "project_id": "kwlee-goog-sandbox",
+     "timestamp": "2022-04-29T01:27:16",
+     "zone": "us-central1-c"
+   }
+   $ curl 34.111.155.196
+   {
+     "cluster_name": "multi-cluster-demo-us",
+     "host_header": "34.111.155.196",
+     "pod_name": "whereami-deployment-895464769-clfgv",
+     "pod_name_emoji": "🤞🏻",
+     "project_id": "kwlee-goog-sandbox",
+     "timestamp": "2022-04-29T01:27:20",
+     "zone": "us-central1-c"
+   }
+   ```
+기본적으로 HTTP Load Balancing 로 들어오는 요청은 클라이언트와 가장 가까운 PoP(GFE) 을 통해 가까운 지역의 클러스터로 들어감.
+현재 구성에서도 동일하지만, 클러스터 내부의 MultiClusterMesh 설정으로 인해 클라이언트 위치와 관계 없이 트래픽이 두 클러스터로 부하 분산됨
+
+필요 시, istio-ingressgateway 의 Service Type 을 clusterip 로 변경하면, 추가적인 외부 접근을 막을 수 있음.
+
+![image](https://user-images.githubusercontent.com/61114855/165873399-7070e8fd-45e3-4d12-ae9f-82a420c36547.png)
 
 
-Load Balancing --> CREATE LOAD BALANCER --> START CONFIGURATION ("HTTP(S) LOAD BALANCER")
-- From Internet to my VMs or serverless services
-- Classic HTTP(S) Load Balancer
 
 
