@@ -3,12 +3,12 @@
 
    ```
    # CLUSTER-1
-   export PROJECT_1=kwlee-goog-sandbox
+   export PROJECT_1=kiwonlee-appmod-sandbox
    export CLUSTER_1=multi-cluster-demo-us
    export LOCATION_1=us-central1-c
    
    # CLUSTER-2
-   export PROJECT_2=kwlee-goog-sandbox
+   export PROJECT_2=kiwonlee-appmod-sandbox
    export CLUSTER_2=multi-cluster-demo-asia
    export LOCATION_2=asia-northeast1-c
 
